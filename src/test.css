@@ -1,0 +1,57 @@
+
+.name_plates {
+  display: flex;
+  justify-content: space-around;
+}
+
+.slider_container{
+background-color: rgba(82, 84, 95, 0.151);
+}
+.slider {
+    position: relative;
+    width: 80vw
+    margin: 0 auto;
+  }
+.slider .line {
+    background: gray;
+    height: 5px;
+    position: absolute;
+    width: calc(79vw - 3em);
+    top: calc(50% - 5px);
+    margin-left: 2vw;
+  }
+
+  .radio_button{
+  background-color: #fafafa;
+  padding: 9px;
+  border-radius: 3px;
+  display: inline-block;
+  position: relative;
+  border: 4px solid gray;
+  border-radius: 100%;
+  transition: all .5s;
+  cursor: pointer;
+  width: 40px;
+  height: 40px;
+}
+
+.radio_box {
+    display: flex;
+    justify-content: space-between;
+    margin-left: 10vw;
+    margin-right: 10vw;
+    padding-top: 15px;
+    padding-bottom: 15px;
+}
+.filename_position{
+position: absolute;
+margin-left: 50px;
+font-size: 1.5rem;
+margin-top: 23px;
+}
+
+.textbox_position {
+  position: absolute;
+ margin-left: 90vw;
+ margin-top: 100px;
+}
