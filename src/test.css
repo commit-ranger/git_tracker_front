@@ -9,7 +9,7 @@ background-color: rgba(82, 84, 95, 0.151);
 }
 .slider {
     position: relative;
-    width: 80vw
+    width: 80vw;
     margin: 0 auto;
   }
 .slider .line {
