@@ -6,4 +6,17 @@
 
 .file_container {
     border: 1px solid greenyellow;
+    display: flex;
+}
+.file_selectors {
+    background-color: rgba(0, 0, 255, 0.077) ;
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: center;
+}
+.file_selectors input[type="radio"]{
+    width: 60px; /* Adjust size as needed */
+    height: 20px; /* Adjust size as needed */
+    border-radius: 50%;
+
 }

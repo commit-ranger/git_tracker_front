@@ -1,25 +1,37 @@
 import { useParams } from "react-router-dom";
-import { BASEURL } from "../../assets/api_adapter";
+import { BASEURL, currentToken} from "../../assets/api_adapter";
 import { useEffect, useState } from "react";
 import "./repo_page.css";
+import submit_repo from "./submit_repo_changes";
+
+
+
 
 function Repo_page() {
   const [repo, setRepo] = useState({});
   const [folders, setFolders] = useState([]);
   const [files, setFiles] = useState([]);
+  const [groups, setGroups] = useState([]);
+  const [mainFolder, setMainFolder] = useState([]);
   const [originalFiles, setOriginalFiles] = useState([]);
 
   const [loading, setLoading] = useState(true);
   const [sections, setSections] = useState({});
 
+  // current folder is going to be what the page is looking at
+  const [currentFolder, setCurrentFolder] = useState([]);
+  const [filteredFolders, setFilteredFolders] = useState([]);
+  const [filteredFiles, setFilteredFiles] = useState([]);
+  
+
   useEffect(() => {
     async function fetch_repo() {
-      console.log("checkpoint alpha");
       try {
         const response = await fetch(`${BASEURL}/repo/get_entire_repo`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${currentToken}`,
           },
           body: JSON.stringify({
             id: 2, //TODO: CHANGE THIS WHEN TESTING IS DONE
@@ -36,6 +48,10 @@ function Repo_page() {
         setFolders(translatedData[1]);
         setFiles(translatedData[2]);
         setOriginalFiles(translatedData[2]);
+        setGroups(translatedData[3])
+        setMainFolder(translatedData[4][0])
+        setCurrentFolder(translatedData[4][0])
+        console.log(translatedData[4][0])
         setLoading(false); //* Set loading to false when data is fetched
         console.log("folder data", translatedData);
       } catch (error) {
@@ -46,30 +62,58 @@ function Repo_page() {
     fetch_repo();
   }, []);
 
-  function handle_file_change(event){
-      // get the selection change, 
-      const event_file_id = parseInt(event.target.name, 10)
-      const new_section_selected = event.target.id
-      // update the connected file 
+  // ! FILTER THE FILES AND FOLDERS DEPENDING ON THE CURRENT FOLDER USESTATE
+  useEffect(() => {
+      const connected_folders = folders.filter(item => item.parent_folder_id == currentFolder.folder_id)
+      const connected_files = files.filter(item => item.folder_id == currentFolder.folder_id)
 
-      const fileIndex = files.findIndex(file => file.file_id === event_file_id);
+      setFilteredFolders(connected_folders)
+      setFilteredFiles(connected_files)
+  }, [currentFolder])
 
-      console.log("index",fileIndex, "file id", event_file_id, "new section", new_section_selected)
-      if (fileIndex !== -1) {
-        // Create a copy of the object with the updated `section_selected` property
-        const updatedFile = { ...files[fileIndex], section_selected: new_section_selected };
-        
-        // Update the `files` array with the updated object
-        const updatedFiles = [...files];
-        updatedFiles[fileIndex] = updatedFile;
-      console.log(updatedFile)
-      setFiles(updatedFiles)
-      } else {
-        console.log('File not found');
-      }
-
-      // save the change in a diferent array to submit change on "save"
+  function handle_file_change(event) {
+    const event_file_id = parseInt(event.target.name, 10);
+    const new_section_selected = parseInt(event.target.id);
+  
+    const fileIndex = files.findIndex((file) => file.file_id === event_file_id);
+  
+    if (fileIndex !== -1) {
+      const updatedFile = { ...files[fileIndex], section_checked: new_section_selected };
+      const updatedFiles = [...files];
+      updatedFiles[fileIndex] = updatedFile;
+  
+      setFiles(updatedFiles);
+    } else {
+      console.log('File not found');
+    }
   }
+  useEffect(() => {
+  }, [files]);
+    
+
+
+  // submit changes to the DBs
+function handle_save(){
+submit_repo(originalFiles, files)
+// TODO REPLACE THE FILES SO IF THEY UPDATE IT AGAIN IT DOES NOT RESUBMIT AN ALREADY SUBMITTED CHANGES
+//? DONT KNOW IF THIS REALLY MATTERS
+}
+
+// TODO ADD FILE 
+
+function handle_add_file(){}
+
+// TODO DELETE FILE
+
+function handle_delete_file(){}
+
+// TODO ADD FOLDER
+
+function handle_add_folder(){}
+
+//TODO DELETE FOLDER
+
+function handle_delete_folder(){}
 
   return (
     <>
@@ -78,39 +122,26 @@ function Repo_page() {
         <p>Loading...</p>
       ) : (
         <div>
-          {folders.map((folder) => (
-            <div className="folder_container" key={folder.folder_id}>
-              <h2>{folder.title}</h2>
-              <div>
-                {files
-                  .filter((file) => file.folder_id == folder.folder_id)
-                  .map((file) => (
-                    <div className="file_container">
-                      <p key={file.file_id}>{file.filename}</p>
-                      <div>
-                        <form>
-                          {sections.map((section) => (
-                            <div>
-                              <input
-                                type="radio"
-                                id={section.section_location}
-                                name={file.file_id}
-                                value={section.section_title}
-                                checked={section.section_location === file.section_checked}
-                                onChange={handle_file_change}
-                              />
-                              <label htmlFor="no">
-                                {section.section_title}
-                              </label>
-                            </div>
-                          ))}
-                        </form>
-                      </div>
-                    </div>
-                  ))}
-              </div>
-            </div>
-          ))}
+          <button onClick={() => setCurrentFolder(mainFolder)}>HOME</button>
+
+        <h4>{currentFolder.title}</h4>
+        {filteredFolders.length ? filteredFolders.map((folder) => {
+          return(
+            <button key={folder.id} onClick={() => setCurrentFolder(folder)}>
+            {folder.title}
+          </button>
+          )
+        }): <p>no repos yet</p>
+        }
+        {filteredFiles.length ? filteredFiles.map((file) => {
+          return(
+            <>
+            <p>{file.filename}</p>
+            </>
+          )
+        }): <p>no repos yet</p>
+        }
+
         </div>
       )}
     </>
